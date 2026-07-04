@@ -205,11 +205,18 @@ export const Battle = () => {
           return (
             <div key={b.id} style={{
               position: 'absolute', left: x, top: y, width: TILE_WIDTH * 2, height: TILE_WIDTH * 2, 
-              backgroundImage: bgImage, backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: bgImage === 'none' ? '#555' : 'transparent',
-              mixBlendMode: b.type === 'Wall' ? 'normal' : 'screen', border: 'none', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', transform: 'translateZ(1px)', paddingBottom: 4
+              backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,65,0,0.2)', 
+              display: 'flex', alignItems: 'flex-end', justifyContent: 'center', transform: 'translateZ(1px)'
             }}>
+              {/* STANDING SPRITE */}
+              <div style={{
+                position: 'absolute', bottom: '30%', left: '50%', width: TILE_WIDTH * 3.5, height: TILE_WIDTH * 3.5, marginLeft: -TILE_WIDTH * 1.75,
+                backgroundImage: bgImage, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'bottom center',
+                mixBlendMode: b.type === 'Wall' ? 'normal' : 'screen', transform: 'rotateZ(45deg) rotateX(-60deg)', transformOrigin: 'bottom center', pointerEvents: 'none'
+              }} />
+
               {b.type !== 'Wall' && (
-                <div style={{ transform: 'rotateZ(45deg) rotateX(-60deg)', color: '#FF4100', fontWeight: 'bold', fontSize: 10, background: 'rgba(0,0,0,0.8)', padding: '2px 4px' }}>
+                <div style={{ position: 'absolute', bottom: 10, transform: 'rotateZ(45deg) rotateX(-60deg)', color: '#FF4100', fontWeight: '900', fontSize: 12, background: 'rgba(0,0,0,0.8)', padding: '2px 8px', borderRadius: 4, border: '1px solid #FF4100' }}>
                   HP {Math.ceil(b.level * 100)}
                 </div>
               )}
@@ -224,10 +231,20 @@ export const Battle = () => {
           const sprite = t.type === 'Barbarian' ? 'url(/assets/barb.jpg)' : 'url(/assets/arch.jpg)';
           return (
             <div key={t.id} style={{
-              position: 'absolute', left: x + (TILE_WIDTH/2) - 16, top: y + (TILE_WIDTH/2) - 16, width: 32, height: 32,
-              backgroundImage: sprite, backgroundSize: 'cover', backgroundPosition: 'center',
-              mixBlendMode: 'screen', transform: 'translateZ(5px)', transition: 'left 0.1s linear, top 0.1s linear'
-            }} />
+              position: 'absolute', left: x, top: y, width: TILE_WIDTH * 2, height: TILE_WIDTH * 2,
+              pointerEvents: 'none', transform: 'translateZ(5px)', transition: 'left 0.1s linear, top 0.1s linear'
+            }}>
+              {/* COUNTER-ROTATED TROOP SPRITE */}
+              <div style={{
+                position: 'absolute', bottom: '20%', left: '50%', width: TILE_WIDTH * 2.5, height: TILE_WIDTH * 2.5, marginLeft: -TILE_WIDTH * 1.25,
+                backgroundImage: sprite, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'bottom center',
+                mixBlendMode: 'screen', transform: 'rotateZ(45deg) rotateX(-60deg)', transformOrigin: 'bottom center', filter: 'drop-shadow(0 0 5px rgba(255,0,255,0.5))'
+              }} />
+              {/* HEALTH BAR */}
+              <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%) rotateZ(45deg) rotateX(-60deg)', width: 30, height: 4, background: '#333', borderRadius: 2 }}>
+                <div style={{ width: `${(t.hp / (t.type === 'Barbarian' ? 100 : 50)) * 100}%`, height: '100%', background: '#00FF41', borderRadius: 2 }} />
+              </div>
+            </div>
           )
         })}
       </div>

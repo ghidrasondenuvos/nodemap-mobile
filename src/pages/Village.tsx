@@ -172,28 +172,34 @@ export const Village = () => {
     >
       {/* HUD */}
       <div style={{ position: 'absolute', top: 20, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', zIndex: 100, pointerEvents: 'none' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start', pointerEvents: 'auto' }}>
-          <div>
-            <div style={{ color: '#00FF41', fontFamily: 'monospace', fontWeight: 'bold', fontSize: 18 }}>{gameState.player.name}</div>
-            <div style={{ color: '#FFF', fontSize: 12 }}>Level 5</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start', pointerEvents: 'auto' }}>
+          <div style={{ background: 'rgba(10, 15, 10, 0.8)', backdropFilter: 'blur(10px)', padding: '10px 20px', borderRadius: '12px', border: '1px solid rgba(0,255,65,0.3)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+            <div style={{ color: '#00FF41', fontFamily: 'monospace', fontWeight: '900', fontSize: 20, textShadow: '0 0 10px #00FF41' }}>{gameState.player.name}</div>
+            <div style={{ color: '#A0A0A0', fontSize: 12, fontWeight: 'bold', letterSpacing: 2 }}>COMMANDER LVL 5</div>
           </div>
-          <button onClick={() => navigate('/battle')} style={{ background: '#FF4100', color: '#FFF', border: 'none', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer', borderRadius: 4 }}>
-            ⚔️ ATTACK!
+          <button onClick={() => navigate('/battle')} style={{ 
+            background: 'linear-gradient(135deg, #FF4100 0%, #AA2200 100%)', color: '#FFF', border: '1px solid #FF8800', 
+            padding: '12px 24px', fontWeight: '900', cursor: 'pointer', borderRadius: '8px', fontSize: 16,
+            boxShadow: '0 4px 20px rgba(255, 65, 0, 0.6)', textShadow: '0 2px 4px rgba(0,0,0,0.5)', transition: 'transform 0.1s'
+          }} onPointerDown={e => e.currentTarget.style.transform = 'scale(0.95)'} onPointerUp={e => e.currentTarget.style.transform = 'scale(1)'}>
+            ⚔️ INITIATE ATTACK
           </button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end', pointerEvents: 'auto' }}>
-          <div style={{ background: '#111', padding: '6px 16px', border: '1px solid #00FF41', borderRadius: 4 }}>
-            <span style={{ color: '#00FF41', marginRight: 8, fontWeight: 'bold' }}>GOLD</span>
-            <span style={{ color: '#FFF', fontFamily: 'monospace', fontSize: 16 }}>{Math.floor(gameState.resources.gold)}</span>
-          </div>
-          <div style={{ background: '#111', padding: '6px 16px', border: '1px solid #D100FF', borderRadius: 4 }}>
-            <span style={{ color: '#D100FF', marginRight: 8, fontWeight: 'bold' }}>ELIXIR</span>
-            <span style={{ color: '#FFF', fontFamily: 'monospace', fontSize: 16 }}>{Math.floor(gameState.resources.elixir)}</span>
-          </div>
-          <div style={{ background: '#111', padding: '6px 16px', border: '1px solid #00FFFF', borderRadius: 4 }}>
-            <span style={{ color: '#00FFFF', marginRight: 8, fontWeight: 'bold' }}>GEMS</span>
-            <span style={{ color: '#FFF', fontFamily: 'monospace', fontSize: 16 }}>{Math.floor(gameState.resources.gems)}</span>
-          </div>
+          {[
+            { label: 'GOLD', value: gameState.resources.gold, color: '#FFD700', bg: 'rgba(255,215,0,0.1)' },
+            { label: 'ELIXIR', value: gameState.resources.elixir, color: '#D100FF', bg: 'rgba(209,0,255,0.1)' },
+            { label: 'GEMS', value: gameState.resources.gems, color: '#00FFFF', bg: 'rgba(0,255,255,0.1)' }
+          ].map(res => (
+            <div key={res.label} style={{ 
+              background: 'rgba(10, 15, 10, 0.8)', backdropFilter: 'blur(10px)', padding: '8px 16px', 
+              border: `1px solid ${res.color}`, borderRadius: '8px', display: 'flex', alignItems: 'center',
+              boxShadow: `0 4px 15px ${res.bg}`, minWidth: 140, justifyContent: 'space-between'
+            }}>
+              <span style={{ color: res.color, marginRight: 12, fontWeight: '900', fontSize: 12, letterSpacing: 1 }}>{res.label}</span>
+              <span style={{ color: '#FFF', fontFamily: 'monospace', fontSize: 18, fontWeight: 'bold' }}>{Math.floor(res.value)}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -215,11 +221,14 @@ export const Village = () => {
             height: TILE_WIDTH * 20,
             left: -TILE_WIDTH * 10,
             top: -TILE_WIDTH * 10,
-            backgroundImage: 'linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px)',
+            backgroundImage: `
+              linear-gradient(rgba(0, 255, 65, 0.15) 1px, transparent 1px), 
+              linear-gradient(90deg, rgba(0, 255, 65, 0.15) 1px, transparent 1px)
+            `,
             backgroundSize: `${TILE_WIDTH}px ${TILE_WIDTH}px`,
-            backgroundColor: '#0a1a0a',
-            border: '2px solid rgba(0, 255, 65, 0.3)',
-            boxShadow: '0 0 100px rgba(0,255,65,0.1)',
+            backgroundColor: '#050f05',
+            border: '2px solid rgba(0, 255, 65, 0.5)',
+            boxShadow: '0 0 150px rgba(0,255,65,0.2) inset',
             pointerEvents: placementMode ? 'auto' : 'none',
             cursor: placementMode ? 'crosshair' : 'default'
           }} 
@@ -249,29 +258,45 @@ export const Village = () => {
                 top: y,
                 width: TILE_WIDTH * 2, 
                 height: TILE_WIDTH * 2, 
-                backgroundImage: bgImage,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundColor: bgImage === 'none' ? '#555' : 'transparent',
-                // This is the magic for AI-generated JPGs with black backgrounds!
-                mixBlendMode: b.type === 'Wall' ? 'normal' : 'screen',
-                border: isSelected ? '2px solid #FFF' : 'none',
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                border: isSelected ? '2px solid #FFF' : '1px solid rgba(0,255,65,0.2)',
                 display: 'flex',
-                alignItems: 'flex-end',
+                alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: isSelected ? '0 0 20px #FFF' : 'none',
+                boxShadow: isSelected ? '0 0 30px rgba(255,255,255,0.3) inset' : 'none',
                 transform: 'translateZ(1px)', 
                 cursor: 'pointer',
-                transition: 'all 0.2s',
-                paddingBottom: 4
+                transition: 'border 0.2s'
               }}
             >
-              <div style={{ transform: 'rotateZ(45deg) rotateX(-60deg)', color: '#00FF41', fontWeight: 'bold', fontSize: 12, background: 'rgba(0,0,0,0.8)', padding: '2px 4px' }}>
+              {/* COUNTER-ROTATED STANDING SPRITE */}
+              <div style={{
+                position: 'absolute',
+                bottom: '30%',
+                left: '50%',
+                width: TILE_WIDTH * 3.5,
+                height: TILE_WIDTH * 3.5,
+                marginLeft: -TILE_WIDTH * 1.75,
+                backgroundImage: bgImage,
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'bottom center',
+                mixBlendMode: b.type === 'Wall' ? 'normal' : 'screen',
+                transform: 'rotateZ(45deg) rotateX(-60deg)',
+                transformOrigin: 'bottom center',
+                pointerEvents: 'none',
+                filter: isSelected ? 'drop-shadow(0 0 10px #FFF)' : 'none'
+              }} />
+
+              {/* LEVEL BADGE */}
+              <div style={{ position: 'absolute', bottom: 10, transform: 'rotateZ(45deg) rotateX(-60deg)', color: '#00FF41', fontWeight: '900', fontSize: 14, background: 'rgba(0,0,0,0.8)', padding: '2px 8px', borderRadius: 12, border: '1px solid #00FF41' }}>
                 LVL {b.level}
               </div>
+              
+              {/* UPGRADE PROGRESS */}
               {b.isUpgrading && (
-                <div style={{ position: 'absolute', top: -20, left: '50%', transform: 'translateX(-50%) rotateZ(45deg) rotateX(-60deg)', color: '#00FFFF', fontWeight: 'bold', fontSize: 10, background: 'rgba(0,0,0,0.8)', padding: '2px 4px', whiteSpace: 'nowrap' }}>
-                  UPGRADING
+                <div style={{ position: 'absolute', top: -20, left: '50%', transform: 'translateX(-50%) rotateZ(45deg) rotateX(-60deg)', color: '#00FFFF', fontWeight: '900', fontSize: 12, background: 'rgba(0,0,0,0.9)', padding: '4px 8px', borderRadius: 4, border: '1px solid #00FFFF', whiteSpace: 'nowrap', boxShadow: '0 0 10px rgba(0,255,255,0.5)' }}>
+                  ⚙️ UPGRADING
                 </div>
               )}
             </div>
@@ -283,42 +308,54 @@ export const Village = () => {
       {selectedBuilding && (
         <div style={{
           position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)',
-          background: '#111', border: '1px solid #00FF41', borderRadius: 8,
-          padding: 20, display: 'flex', flexDirection: 'column', gap: 12, zIndex: 200,
-          minWidth: 250, boxShadow: '0 10px 30px rgba(0,0,0,0.8)'
+          background: 'rgba(10, 15, 10, 0.95)', border: '1px solid #00FF41', borderRadius: 16,
+          padding: 24, display: 'flex', flexDirection: 'column', gap: 16, zIndex: 200,
+          minWidth: 320, boxShadow: '0 20px 50px rgba(0,0,0,0.8), 0 0 20px rgba(0,255,65,0.2) inset',
+          backdropFilter: 'blur(10px)'
         }}>
-          <div style={{ color: '#00FF41', fontWeight: 'bold', fontSize: 18, textTransform: 'uppercase' }}>
-            {selectedBuilding.type} <span style={{ color: '#FFF' }}>LVL {selectedBuilding.level}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ color: '#00FF41', fontWeight: '900', fontSize: 22, textTransform: 'uppercase', letterSpacing: 1 }}>
+              {selectedBuilding.type}
+            </div>
+            <div style={{ background: '#FFF', color: '#000', padding: '2px 8px', borderRadius: 10, fontWeight: '900', fontSize: 12 }}>
+              LVL {selectedBuilding.level}
+            </div>
           </div>
+          
           {selectedBuilding.type === 'Barracks' && !selectedBuilding.isUpgrading && (
-            <div style={{ color: '#FFF', fontSize: 14 }}>
-              Troops: <span style={{ color: '#D100FF', fontWeight: 'bold' }}>{gameState.troops.barbarians} Barbarians</span> | <span style={{ color: '#D100FF', fontWeight: 'bold' }}>{gameState.troops.archers} Archers</span>
+            <div style={{ color: '#FFF', fontSize: 14, background: 'rgba(255,255,255,0.05)', padding: 12, borderRadius: 8 }}>
+              <div style={{ color: '#888', marginBottom: 4, fontSize: 12, fontWeight: 'bold' }}>GARRISON</div>
+              ⚔️ <span style={{ color: '#D100FF', fontWeight: 'bold' }}>{gameState.troops.barbarians} Barbarians</span> &nbsp;|&nbsp; 
+              🏹 <span style={{ color: '#D100FF', fontWeight: 'bold' }}>{gameState.troops.archers} Archers</span>
             </div>
           )}
+          
           <div style={{ display: 'flex', gap: 10 }}>
             {!selectedBuilding.isUpgrading ? (
-              <button onClick={handleUpgrade} style={{ flex: 1, background: '#B85025', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer' }}>
+              <button onClick={handleUpgrade} style={{ flex: 1, background: 'linear-gradient(to bottom, #FFD700, #B8860B)', color: '#000', border: 'none', padding: '12px 16px', fontWeight: '900', cursor: 'pointer', borderRadius: 8, boxShadow: '0 4px 10px rgba(255,215,0,0.3)' }}>
                 UPGRADE ({selectedBuilding.level * 500} G)
               </button>
             ) : (
-              <button onClick={handleSpeedUp} style={{ flex: 1, background: '#00FFFF', color: '#000', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer' }}>
-                FINISH NOW (10 GEMS)
+              <button onClick={handleSpeedUp} style={{ flex: 1, background: 'linear-gradient(to bottom, #00FFFF, #008888)', color: '#000', border: 'none', padding: '12px 16px', fontWeight: '900', cursor: 'pointer', borderRadius: 8, boxShadow: '0 4px 10px rgba(0,255,255,0.3)' }}>
+                FINISH NOW (10 💎)
               </button>
             )}
-            {selectedBuilding.type === 'Barracks' && !selectedBuilding.isUpgrading && (
-              <>
-                <button onClick={() => handleTrain('barbarians')} style={{ flex: 1, background: '#D100FF', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer', fontSize: 12 }}>
-                  TRAIN BARB (100 E)
-                </button>
-                <button onClick={() => handleTrain('archers')} style={{ flex: 1, background: '#D100FF', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer', fontSize: 12 }}>
-                  TRAIN ARCH (150 E)
-                </button>
-              </>
-            )}
-            <button onClick={() => setSelectedBuilding(null)} style={{ background: '#333', color: '#FFF', border: 'none', padding: 10, cursor: 'pointer' }}>
+            
+            <button onClick={() => setSelectedBuilding(null)} style={{ background: 'transparent', color: '#FFF', border: '1px solid #555', padding: '12px 16px', cursor: 'pointer', borderRadius: 8, fontWeight: 'bold' }}>
               CLOSE
             </button>
           </div>
+
+          {selectedBuilding.type === 'Barracks' && !selectedBuilding.isUpgrading && (
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => handleTrain('barbarians')} style={{ flex: 1, background: '#111', color: '#D100FF', border: '1px solid #D100FF', padding: 10, fontWeight: 'bold', cursor: 'pointer', borderRadius: 8, fontSize: 12 }}>
+                + TRAIN BARB (100 E)
+              </button>
+              <button onClick={() => handleTrain('archers')} style={{ flex: 1, background: '#111', color: '#D100FF', border: '1px solid #D100FF', padding: 10, fontWeight: 'bold', cursor: 'pointer', borderRadius: 8, fontSize: 12 }}>
+                + TRAIN ARCH (150 E)
+              </button>
+            </div>
+          )}
         </div>
       )}
 
