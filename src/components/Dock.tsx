@@ -1,20 +1,40 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { House, PencilSimple, Gear } from '@phosphor-icons/react';
+import { motion } from 'framer-motion';
+import { triggerHaptic } from '../utils/haptics';
+import { ImpactStyle } from '@capacitor/haptics';
 import './Dock.css';
 
 export const Dock: React.FC = () => {
+  const location = useLocation();
+
+  const handleTap = () => {
+    triggerHaptic(ImpactStyle.Light);
+  };
+
   return (
     <div className="dock-container">
       <nav className="dock glass">
-        <NavLink to="/" className={({ isActive }) => isActive ? "dock-item active" : "dock-item"}>
-          <House size={28} weight="duotone" />
+        <NavLink to="/" onClick={handleTap} className={({ isActive }) => isActive ? "dock-item active" : "dock-item"}>
+          <House size={30} weight={location.pathname === '/' ? "fill" : "regular"} />
+          {location.pathname === '/' && (
+            <motion.div layoutId="dock-pill" className="active-pill" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
+          )}
         </NavLink>
-        <NavLink to="/new" className={({ isActive }) => isActive ? "dock-item active" : "dock-item"}>
-          <PencilSimple size={28} weight="duotone" />
+        
+        <NavLink to="/new" onClick={handleTap} className={({ isActive }) => isActive ? "dock-item active" : "dock-item"}>
+          <PencilSimple size={30} weight={location.pathname === '/new' ? "fill" : "regular"} />
+          {location.pathname === '/new' && (
+            <motion.div layoutId="dock-pill" className="active-pill" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
+          )}
         </NavLink>
-        <NavLink to="/settings" className={({ isActive }) => isActive ? "dock-item active" : "dock-item"}>
-          <Gear size={28} weight="duotone" />
+        
+        <NavLink to="/settings" onClick={handleTap} className={({ isActive }) => isActive ? "dock-item active" : "dock-item"}>
+          <Gear size={30} weight={location.pathname === '/settings' ? "fill" : "regular"} />
+          {location.pathname === '/settings' && (
+            <motion.div layoutId="dock-pill" className="active-pill" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
+          )}
         </NavLink>
       </nav>
     </div>

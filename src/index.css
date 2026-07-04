@@ -1,19 +1,21 @@
 :root {
-  --color-paper: #F7F5F0;
-  --color-paper-dark: #EAE6DF;
-  --color-ink: #2D2B2A;
-  --color-ink-light: #5A5755;
-  --color-accent: #C86638; /* Burned Orange */
-  --color-accent-hover: #b0552b;
-  --color-glass: rgba(247, 245, 240, 0.7);
-  --color-card: #FFFFFF;
+  /* Premium Analog Palette */
+  --color-paper: #F2EFE9;
+  --color-paper-dark: #E3DFD5;
+  --color-ink: #1C1A19;
+  --color-ink-light: #6E6862;
+  --color-accent: #D45B31; /* Vibrant Burned Orange */
+  --color-accent-hover: #B84A25;
+  --color-glass: rgba(242, 239, 233, 0.75);
+  --color-glass-border: rgba(255, 255, 255, 0.4);
+  --color-card: #FAF9F6;
   
-  --shadow-sm: 0 2px 8px rgba(45, 43, 42, 0.05);
-  --shadow-md: 0 4px 16px rgba(45, 43, 42, 0.08);
-  --shadow-glass: 0 8px 32px rgba(45, 43, 42, 0.1);
+  --shadow-sm: 0 2px 8px rgba(28, 26, 25, 0.04);
+  --shadow-md: 0 8px 24px rgba(28, 26, 25, 0.06);
+  --shadow-glass: 0 12px 32px rgba(28, 26, 25, 0.08);
   
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  --font-serif: 'Playfair Display', 'Georgia', 'Times New Roman', Times, serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Playfair Display', 'Georgia', serif;
 }
 
 * {
@@ -28,14 +30,10 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   line-height: 1.6;
-  
-  /* Prevent pull-to-refresh bounce while keeping content scrollable */
   overscroll-behavior-y: none;
   
-  /* Base noise texture for analog feel */
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
-  
-  /* Ensure smooth native scrolling */
+  /* Extremely subtle fine grain paper texture */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
   -webkit-overflow-scrolling: touch;
 }
 
@@ -43,58 +41,33 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-serif);
   font-weight: 600;
   color: var(--color-ink);
-  margin-bottom: 0.5rem;
 }
 
 a {
   color: var(--color-accent);
   text-decoration: none;
-  transition: color 0.2s ease;
 }
 
-/* Micro-interactions for buttons */
 button {
   cursor: pointer;
   border: none;
   background: none;
   font-family: inherit;
-  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease;
+  outline: none;
 }
 
-button:active {
-  transform: scale(0.95);
-}
-
-/* Glassmorphism utility */
+/* Premium Glassmorphism */
 .glass {
   background: var(--color-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-glass-border);
+  box-shadow: var(--shadow-glass);
 }
 
-/* Layout Utilities */
 .app-container {
   min-height: 100vh;
-  /* Use safe-area-inset for notch and home indicator */
   padding-top: env(safe-area-inset-top);
-  padding-bottom: calc(env(safe-area-inset-bottom) + 80px); /* Leave room for dock */
+  padding-bottom: calc(env(safe-area-inset-bottom) + 90px); /* Taller for the premium dock */
   position: relative;
-}
-
-.page-transition-enter {
-  opacity: 0;
-  transform: translateY(10px);
-}
-.page-transition-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 300ms, transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-.page-transition-exit {
-  opacity: 1;
-}
-.page-transition-exit-active {
-  opacity: 0;
-  transition: opacity 200ms;
 }

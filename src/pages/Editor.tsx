@@ -4,6 +4,9 @@ import { readNote, saveNote, deleteNote } from '../services/filesystem';
 import { CaretLeft, Trash } from '@phosphor-icons/react';
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
+import { triggerHaptic } from '../utils/haptics';
+import { ImpactStyle } from '@capacitor/haptics';
+import { motion } from 'framer-motion';
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 import './Editor.css';
@@ -58,7 +61,8 @@ export const Editor: React.FC<EditorProps> = ({ isNew = false }) => {
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this note?')) {
+    triggerHaptic(ImpactStyle.Heavy);
+    if (window.confirm('Delete this note?')) {
       if (!isNew && id) {
         await deleteNote(decodeURIComponent(id));
       }
@@ -67,11 +71,11 @@ export const Editor: React.FC<EditorProps> = ({ isNew = false }) => {
   };
 
   return (
-    <div className="editor-page page-transition-enter-active">
+    <div className="editor-page">
       <header className="editor-header glass">
-        <button className="icon-btn" onClick={() => { handleSave(); navigate('/'); }}>
+        <motion.button whileTap={{ scale: 0.85 }} className="icon-btn" onClick={() => { triggerHaptic(ImpactStyle.Light); handleSave(); navigate('/'); }}>
           <CaretLeft size={28} />
-        </button>
+        </motion.button>
         <input 
           className="title-input" 
           value={title} 
@@ -79,9 +83,9 @@ export const Editor: React.FC<EditorProps> = ({ isNew = false }) => {
           onBlur={handleSave}
           placeholder="Note Title"
         />
-        <button className="icon-btn delete-btn" onClick={handleDelete}>
+        <motion.button whileTap={{ scale: 0.85 }} className="icon-btn delete-btn" onClick={handleDelete}>
           <Trash size={24} />
-        </button>
+        </motion.button>
       </header>
 
       <div className="editor-content">
