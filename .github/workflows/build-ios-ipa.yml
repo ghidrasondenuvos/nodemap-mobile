@@ -28,7 +28,7 @@ jobs:
         run: |
           cd ios/App
           # Build the app without code signing (SideStore handles signing on-device)
-          xcodebuild -workspace App.xcworkspace \
+          xcodebuild -project App.xcodeproj \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
