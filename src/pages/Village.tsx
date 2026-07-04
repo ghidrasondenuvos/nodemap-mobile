@@ -38,7 +38,7 @@ export const Village = () => {
   if (!gameState) return <div style={{ color: '#fff', padding: 20 }}>Loading Village...</div>;
 
   return (
-    <div style={{ flex: 1, backgroundColor: '#000', overflow: 'hidden', position: 'relative' }}>
+    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#000', overflow: 'hidden', position: 'relative' }}>
       {/* 📋 TASK 8: THE HUD */}
       <div style={{ position: 'absolute', top: 60, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', zIndex: 100 }}>
         <div>
