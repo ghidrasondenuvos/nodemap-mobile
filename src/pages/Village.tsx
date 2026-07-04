@@ -62,13 +62,15 @@ export const Village = () => {
         position: 'absolute', 
         top: '50%', left: '50%', 
         width: 0, height: 0,
+        transformStyle: 'preserve-3d',
         // The magic isometric transform for standard DOM elements
         transform: 'rotateX(60deg) rotateZ(-45deg)' 
       }}>
         {gameState.village.buildings.map((b: Building) => {
           // In isometric CSS space, x is left, y is top.
-          const x = b.q * TILE_WIDTH;
-          const y = b.r * TILE_HEIGHT * 2; // scale factor
+          // We center the village by subtracting 5 (the Town Hall coordinates)
+          const x = (b.q - 5) * TILE_WIDTH;
+          const y = (b.r - 5) * TILE_WIDTH; // Using TILE_WIDTH to make the base grid square before rotation
           
           let color = '#FFF';
           if (b.type === 'TownHall') color = '#B85025';
