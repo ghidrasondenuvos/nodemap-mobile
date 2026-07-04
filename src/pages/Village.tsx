@@ -11,6 +11,7 @@ const INITIAL_STATE: GameState = {
       { id: 'th1', type: 'TownHall', level: 2, q: 5, r: 5, isUpgrading: false },
       { id: 'gm1', type: 'GoldMine', level: 3, q: 3, r: 7, isUpgrading: false },
       { id: 'ec1', type: 'ElixirCollector', level: 1, q: 7, r: 3, isUpgrading: false },
+      { id: 'b1', type: 'Barracks', level: 1, q: 3, r: 3, isUpgrading: false },
       { id: 'w1', type: 'Wall', level: 1, q: 4, r: 5, isUpgrading: false },
     ]
   },
@@ -24,11 +25,14 @@ const MOCK_CHAT = [
   { id: '3', senderName: 'ArcherQueen', text: 'I need troops for war!', timestamp: Date.now() - 5000, isDonationRequest: true }
 ];
 
+import { useNavigate } from 'react-router-dom';
+
 export const Village = () => {
+  const navigate = useNavigate();
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
-  const [placementMode, setPlacementMode] = useState<{type: 'GoldMine'|'ElixirCollector'|'Wall', cost: number} | null>(null);
+  const [placementMode, setPlacementMode] = useState<{type: 'GoldMine'|'ElixirCollector'|'Barracks'|'Wall', cost: number} | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
 
   // Panning State
@@ -76,6 +80,19 @@ export const Village = () => {
     }
   };
 
+  const handleTrain = () => {
+    if (!gameState || selectedBuilding?.type !== 'Barracks') return;
+    if (gameState.resources.elixir >= 100) {
+      const newState = { ...gameState };
+      newState.resources.elixir -= 100;
+      newState.troops.barbarians += 1;
+      setGameState(newState);
+      localStorage.setItem('siegecraft_state', JSON.stringify(newState));
+    } else {
+      alert("Not enough Elixir!");
+    }
+  };
+
   const handleGridClick = () => {
     if (!placementMode || !gameState) return;
     
@@ -115,9 +132,14 @@ export const Village = () => {
     >
       {/* HUD */}
       <div style={{ position: 'absolute', top: 20, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', zIndex: 100, pointerEvents: 'none' }}>
-        <div>
-          <div style={{ color: '#00FF41', fontFamily: 'monospace', fontWeight: 'bold', fontSize: 18 }}>{gameState.player.name}</div>
-          <div style={{ color: '#FFF', fontSize: 12 }}>Level 5</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start', pointerEvents: 'auto' }}>
+          <div>
+            <div style={{ color: '#00FF41', fontFamily: 'monospace', fontWeight: 'bold', fontSize: 18 }}>{gameState.player.name}</div>
+            <div style={{ color: '#FFF', fontSize: 12 }}>Level 5</div>
+          </div>
+          <button onClick={() => navigate('/battle')} style={{ background: '#FF4100', color: '#FFF', border: 'none', padding: '8px 16px', fontWeight: 'bold', cursor: 'pointer', borderRadius: 4 }}>
+            ⚔️ ATTACK!
+          </button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end', pointerEvents: 'auto' }}>
           <div style={{ background: '#111', padding: '6px 16px', border: '1px solid #00FF41', borderRadius: 4 }}>
@@ -218,10 +240,20 @@ export const Village = () => {
           <div style={{ color: '#00FF41', fontWeight: 'bold', fontSize: 18, textTransform: 'uppercase' }}>
             {selectedBuilding.type} <span style={{ color: '#FFF' }}>LVL {selectedBuilding.level}</span>
           </div>
+          {selectedBuilding.type === 'Barracks' && (
+            <div style={{ color: '#FFF', fontSize: 14 }}>
+              Barbarians Available: <span style={{ color: '#D100FF', fontWeight: 'bold' }}>{gameState.troops.barbarians}</span>
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={handleUpgrade} style={{ flex: 1, background: '#B85025', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer' }}>
               UPGRADE ({selectedBuilding.level * 500} G)
             </button>
+            {selectedBuilding.type === 'Barracks' && (
+              <button onClick={handleTrain} style={{ flex: 1, background: '#D100FF', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer' }}>
+                TRAIN (100 E)
+              </button>
+            )}
             <button onClick={() => setSelectedBuilding(null)} style={{ background: '#333', color: '#FFF', border: 'none', padding: 10, cursor: 'pointer' }}>
               CLOSE
             </button>
@@ -256,8 +288,11 @@ export const Village = () => {
           <button onClick={() => { setPlacementMode({type: 'GoldMine', cost: 1000}); setShopOpen(false); }} style={{ background: '#111', color: '#00FF41', border: '1px solid #00FF41', padding: 10, marginBottom: 8, cursor: 'pointer', textAlign: 'left' }}>
             + GOLD MINE (1000 G)
           </button>
-          <button onClick={() => { setPlacementMode({type: 'ElixirCollector', cost: 1000}); setShopOpen(false); }} style={{ background: '#111', color: '#D100FF', border: '1px solid #D100FF', padding: 10, cursor: 'pointer', textAlign: 'left' }}>
+          <button onClick={() => { setPlacementMode({type: 'ElixirCollector', cost: 1000}); setShopOpen(false); }} style={{ background: '#111', color: '#D100FF', border: '1px solid #D100FF', padding: 10, marginBottom: 8, cursor: 'pointer', textAlign: 'left' }}>
             + ELIXIR COLLECTOR (1000 G)
+          </button>
+          <button onClick={() => { setPlacementMode({type: 'Barracks', cost: 500}); setShopOpen(false); }} style={{ background: '#111', color: '#FF4100', border: '1px solid #FF4100', padding: 10, cursor: 'pointer', textAlign: 'left' }}>
+            + BARRACKS (500 G)
           </button>
         </div>
       )}
