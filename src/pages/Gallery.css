@@ -54,55 +54,54 @@
   color: var(--color-ink-light);
 }
 
-.notes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
-  padding-bottom: 20px;
-}
-
-.note-card {
-  background-color: var(--color-card);
-  border-radius: 16px;
-  padding: 18px;
-  height: 220px;
+.notes-list {
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-sm);
-  position: relative;
+  border-radius: 16px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  
-  /* Rich gradient for card */
-  background-image: linear-gradient(135deg, #FFFFFF 0%, #FAF9F6 100%);
+  margin-bottom: 20px;
 }
 
-.note-card h3 {
-  font-size: 1.25rem;
-  line-height: 1.25;
-  margin-bottom: 10px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.note-row {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.2s;
+  cursor: pointer;
 }
 
-.note-card .preview {
+.note-row:last-child {
+  border-bottom: none;
+}
+
+.note-row h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-row .details {
   font-size: 0.95rem;
   color: var(--color-ink-light);
-  flex-grow: 1;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.note-card .date {
-  font-size: 0.8rem;
-  color: var(--color-accent);
-  opacity: 0.9;
-  margin-top: 12px;
-  align-self: flex-start;
+.note-row .date {
   font-weight: 500;
+  white-space: nowrap;
+}
+
+.note-row .preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--color-ink-light);
 }

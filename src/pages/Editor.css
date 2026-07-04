@@ -7,19 +7,39 @@
 .editor-header {
   display: flex;
   align-items: center;
-  padding: env(safe-area-inset-top) 16px 16px;
+  justify-content: space-between;
+  padding: env(safe-area-inset-top) 16px 12px;
   position: sticky;
   top: 0;
   z-index: 10;
-  /* Overwrite glass to match background slightly better */
-  background: rgba(247, 245, 240, 0.85);
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  background: rgba(239, 232, 216, 0.9);
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+
+.ios-back-btn {
+  display: flex;
+  align-items: center;
+  color: var(--color-accent);
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-left: -8px;
+}
+
+.ios-back-btn span {
+  margin-left: 2px;
+  padding-bottom: 2px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .icon-btn {
   padding: 8px;
   border-radius: 50%;
-  color: var(--color-ink-light);
+  color: var(--color-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,24 +51,7 @@
 }
 
 .delete-btn {
-  color: #dc3545;
-}
-
-.title-input {
-  flex-grow: 1;
-  background: transparent;
-  border: none;
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--color-ink);
-  text-align: center;
-  margin: 0 16px;
-  outline: none;
-}
-
-.title-input::placeholder {
-  color: rgba(45, 43, 42, 0.3);
+  color: #D33F49;
 }
 
 .editor-content {

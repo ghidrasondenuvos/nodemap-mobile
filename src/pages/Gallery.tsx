@@ -71,22 +71,24 @@ export const Gallery: React.FC = () => {
           </motion.button>
         </motion.div>
       ) : (
-        <div className="notes-grid">
+        <div className="notes-list glass">
           {filteredNotes.map((note, i) => (
             <motion.div 
               key={note.id} 
-              className="note-card"
+              className="note-row"
               onClick={() => handleNoteClick(note.id)}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.3 }}
-              whileTap={{ scale: 0.96 }}
+              transition={{ delay: i * 0.03, duration: 0.2 }}
+              whileTap={{ backgroundColor: "rgba(0,0,0,0.03)" }}
             >
-              <h3>{note.title}</h3>
-              <p className="preview">{note.preview}</p>
-              <span className="date">
-                {formatDistanceToNow(note.lastModified, { addSuffix: true })}
-              </span>
+              <h3>{note.title.replace('.md', '')}</h3>
+              <div className="details">
+                <span className="date">
+                  {formatDistanceToNow(note.lastModified, { addSuffix: true })}
+                </span>
+                <span className="preview">{note.preview}</span>
+              </div>
             </motion.div>
           ))}
         </div>
