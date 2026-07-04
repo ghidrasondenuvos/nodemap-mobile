@@ -32,7 +32,7 @@ export const Village = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
-  const [placementMode, setPlacementMode] = useState<{type: 'GoldMine'|'ElixirCollector'|'Barracks'|'Wall', cost: number} | null>(null);
+  const [placementMode, setPlacementMode] = useState<{type: 'GoldMine'|'ElixirCollector'|'Barracks'|'Wall'|'Cannon', cost: number} | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
 
   // Panning State
@@ -190,6 +190,7 @@ export const Village = () => {
           if (b.type === 'TownHall') bgImage = 'url(/assets/th.jpg)';
           if (b.type === 'GoldMine') bgImage = 'url(/assets/gm.jpg)';
           if (b.type === 'ElixirCollector') bgImage = 'url(/assets/ec.jpg)';
+          if (b.type === 'Cannon') bgImage = 'url(/assets/cn.jpg)';
           if (b.type === 'Wall') bgImage = 'linear-gradient(45deg, #444, #222)';
 
           const isSelected = selectedBuilding?.id === b.id;
@@ -291,8 +292,11 @@ export const Village = () => {
           <button onClick={() => { setPlacementMode({type: 'ElixirCollector', cost: 1000}); setShopOpen(false); }} style={{ background: '#111', color: '#D100FF', border: '1px solid #D100FF', padding: 10, marginBottom: 8, cursor: 'pointer', textAlign: 'left' }}>
             + ELIXIR COLLECTOR (1000 G)
           </button>
-          <button onClick={() => { setPlacementMode({type: 'Barracks', cost: 500}); setShopOpen(false); }} style={{ background: '#111', color: '#FF4100', border: '1px solid #FF4100', padding: 10, cursor: 'pointer', textAlign: 'left' }}>
+          <button onClick={() => { setPlacementMode({type: 'Barracks', cost: 500}); setShopOpen(false); }} style={{ background: '#111', color: '#FF4100', border: '1px solid #FF4100', padding: 10, marginBottom: 8, cursor: 'pointer', textAlign: 'left' }}>
             + BARRACKS (500 G)
+          </button>
+          <button onClick={() => { setPlacementMode({type: 'Cannon', cost: 2000}); setShopOpen(false); }} style={{ background: '#111', color: '#FFF', border: '1px solid #FF0000', padding: 10, cursor: 'pointer', textAlign: 'left' }}>
+            + DEFENSIVE CANNON (2000 G)
           </button>
         </div>
       )}

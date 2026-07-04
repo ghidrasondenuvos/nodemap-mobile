@@ -12,7 +12,7 @@ export interface Resources {
 
 export interface Building {
   id: string;
-  type: 'TownHall' | 'GoldMine' | 'ElixirCollector' | 'Barracks' | 'Wall';
+  type: 'TownHall' | 'GoldMine' | 'ElixirCollector' | 'Barracks' | 'Wall' | 'Cannon';
   level: number;
   q: number; // Isometric Grid Column
   r: number; // Isometric Grid Row
