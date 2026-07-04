@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import type { GameState, Building } from '../game/schema';
 import { calculateOfflineDelta } from '../game/engine';
-import { TILE_WIDTH, TILE_HEIGHT } from '../game/grid';
+import { TILE_WIDTH } from '../game/grid';
 
-// Mock initial state representing a base loaded from filesystem
 const INITIAL_STATE: GameState = {
-  player: { id: 'p1', name: 'Commander', lastLoginTimestamp: Date.now() - 3600000 * 4 }, // offline for 4 hours
+  player: { id: 'p1', name: 'Commander', lastLoginTimestamp: Date.now() - 3600000 * 4 },
   resources: { gold: 1200, elixir: 800, gems: 500 },
   village: {
     buildings: [
@@ -28,76 +27,122 @@ const MOCK_CHAT = [
 export const Village = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
+
+  // Panning State
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [startPan, setStartPan] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    // Simulate login and offline progress calculation
-    const processedState = calculateOfflineDelta(INITIAL_STATE, Date.now());
-    setGameState(processedState);
+    // Basic LocalStorage persistence for Web
+    const saved = localStorage.getItem('siegecraft_state');
+    let state = saved ? JSON.parse(saved) : INITIAL_STATE;
+    state = calculateOfflineDelta(state, Date.now());
+    setGameState(state);
+    localStorage.setItem('siegecraft_state', JSON.stringify(state));
   }, []);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsDragging(true);
+    setStartPan({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (isDragging) {
+      setPan({ x: e.clientX - startPan.x, y: e.clientY - startPan.y });
+    }
+  };
+
+  const handlePointerUp = () => setIsDragging(false);
 
   if (!gameState) return <div style={{ color: '#fff', padding: 20 }}>Loading Village...</div>;
 
   return (
-    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#000', overflow: 'hidden', position: 'relative' }}>
-      {/* 📋 TASK 8: THE HUD */}
-      <div style={{ position: 'absolute', top: 60, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', zIndex: 100 }}>
+    <div 
+      style={{ width: '100vw', height: '100vh', backgroundColor: '#050a05', overflow: 'hidden', position: 'relative', touchAction: 'none' }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+    >
+      {/* HUD */}
+      <div style={{ position: 'absolute', top: 20, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', zIndex: 100, pointerEvents: 'none' }}>
         <div>
-          <div style={{ color: '#00FF41', fontFamily: 'monospace', fontWeight: 'bold' }}>{gameState.player.name}</div>
+          <div style={{ color: '#00FF41', fontFamily: 'monospace', fontWeight: 'bold', fontSize: 18 }}>{gameState.player.name}</div>
           <div style={{ color: '#FFF', fontSize: 12 }}>Level 5</div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
-          <div style={{ background: '#333', padding: '4px 12px', border: '1px solid #00FF41' }}>
-            <span style={{ color: '#00FF41', marginRight: 8 }}>GOLD</span>
-            <span style={{ color: '#FFF', fontFamily: 'monospace' }}>{Math.floor(gameState.resources.gold)}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end', pointerEvents: 'auto' }}>
+          <div style={{ background: '#111', padding: '6px 16px', border: '1px solid #00FF41', borderRadius: 4 }}>
+            <span style={{ color: '#00FF41', marginRight: 8, fontWeight: 'bold' }}>GOLD</span>
+            <span style={{ color: '#FFF', fontFamily: 'monospace', fontSize: 16 }}>{Math.floor(gameState.resources.gold)}</span>
           </div>
-          <div style={{ background: '#333', padding: '4px 12px', border: '1px solid #D100FF' }}>
-            <span style={{ color: '#D100FF', marginRight: 8 }}>ELIXIR</span>
-            <span style={{ color: '#FFF', fontFamily: 'monospace' }}>{Math.floor(gameState.resources.elixir)}</span>
+          <div style={{ background: '#111', padding: '6px 16px', border: '1px solid #D100FF', borderRadius: 4 }}>
+            <span style={{ color: '#D100FF', marginRight: 8, fontWeight: 'bold' }}>ELIXIR</span>
+            <span style={{ color: '#FFF', fontFamily: 'monospace', fontSize: 16 }}>{Math.floor(gameState.resources.elixir)}</span>
           </div>
         </div>
       </div>
 
-      {/* 📋 TASK 2: ISOMETRIC GRID RENDERING */}
+      {/* ISOMETRIC GRID RENDERING WITH PANNING */}
       <div style={{ 
         position: 'absolute', 
-        top: '50%', left: '50%', 
+        top: `calc(50% + ${pan.y}px)`, 
+        left: `calc(50% + ${pan.x}px)`, 
         width: 0, height: 0,
         transformStyle: 'preserve-3d',
-        // The magic isometric transform for standard DOM elements
         transform: 'rotateX(60deg) rotateZ(-45deg)' 
       }}>
+        {/* GRASS FLOOR */}
+        <div style={{
+          position: 'absolute',
+          width: TILE_WIDTH * 20,
+          height: TILE_WIDTH * 20,
+          left: -TILE_WIDTH * 10,
+          top: -TILE_WIDTH * 10,
+          backgroundImage: 'linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px)',
+          backgroundSize: `${TILE_WIDTH}px ${TILE_WIDTH}px`,
+          backgroundColor: '#0a1a0a',
+          border: '2px solid rgba(0, 255, 65, 0.3)',
+          boxShadow: '0 0 100px rgba(0,255,65,0.1)',
+          pointerEvents: 'none'
+        }} />
+
+        {/* BUILDINGS */}
         {gameState.village.buildings.map((b: Building) => {
-          // In isometric CSS space, x is left, y is top.
-          // We center the village by subtracting 5 (the Town Hall coordinates)
           const x = (b.q - 5) * TILE_WIDTH;
-          const y = (b.r - 5) * TILE_WIDTH; // Using TILE_WIDTH to make the base grid square before rotation
+          const y = (b.r - 5) * TILE_WIDTH; 
           
           let color = '#FFF';
           if (b.type === 'TownHall') color = '#B85025';
           if (b.type === 'GoldMine') color = '#00FF41';
           if (b.type === 'ElixirCollector') color = '#D100FF';
-          if (b.type === 'Wall') color = '#888';
+          if (b.type === 'Wall') color = '#555';
+
+          const isSelected = selectedBuilding?.id === b.id;
 
           return (
             <div 
               key={b.id}
+              onClick={(e) => { e.stopPropagation(); setSelectedBuilding(b); }}
               style={{
                 position: 'absolute',
                 left: x,
                 top: y,
-                width: TILE_WIDTH * 2, // 2x2 building
-                height: TILE_HEIGHT * 4,
+                width: TILE_WIDTH * 2, 
+                height: TILE_WIDTH * 2, 
                 backgroundColor: color,
-                border: '2px solid #000',
+                border: isSelected ? '4px solid #FFF' : '2px solid #000',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)',
-                // Stand up the building against the isometric floor
-                transform: 'translateZ(20px)', 
+                boxShadow: isSelected ? '0 0 20px #FFF' : 'inset 0 0 20px rgba(0,0,0,0.5)',
+                transform: 'translateZ(1px)', 
+                cursor: 'pointer',
+                transition: 'all 0.2s'
               }}
             >
-              <div style={{ transform: 'rotateZ(45deg) rotateX(-60deg)', color: '#000', fontWeight: 'bold', fontSize: 10 }}>
+              <div style={{ transform: 'rotateZ(45deg) rotateX(-60deg)', color: '#000', fontWeight: 'bold', fontSize: 14 }}>
                 {b.type.substring(0,2).toUpperCase()}
               </div>
             </div>
@@ -105,46 +150,55 @@ export const Village = () => {
         })}
       </div>
 
-      {/* 📋 TASK 9: CLAN CHAT & SOCIAL INFRASTRUCTURE */}
-      <div style={{ position: 'absolute', bottom: 120, right: 20, zIndex: 100 }}>
+      {/* BUILDING INSPECTOR PANEL */}
+      {selectedBuilding && (
+        <div style={{
+          position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)',
+          background: '#111', border: '1px solid #00FF41', borderRadius: 8,
+          padding: 20, display: 'flex', flexDirection: 'column', gap: 12, zIndex: 200,
+          minWidth: 250, boxShadow: '0 10px 30px rgba(0,0,0,0.8)'
+        }}>
+          <div style={{ color: '#00FF41', fontWeight: 'bold', fontSize: 18, textTransform: 'uppercase' }}>
+            {selectedBuilding.type} <span style={{ color: '#FFF' }}>LVL {selectedBuilding.level}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button style={{ flex: 1, background: '#B85025', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer' }}>
+              UPGRADE
+            </button>
+            <button onClick={() => setSelectedBuilding(null)} style={{ background: '#333', color: '#FFF', border: 'none', padding: 10, cursor: 'pointer' }}>
+              CLOSE
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* CLAN CHAT */}
+      <div style={{ position: 'absolute', bottom: 40, right: 20, zIndex: 100 }}>
         <button 
           onClick={() => setChatOpen(!chatOpen)}
-          style={{ background: '#B85025', color: '#FFF', border: 'none', padding: '12px 20px', borderRadius: 30, fontWeight: 'bold', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', cursor: 'pointer' }}
+          style={{ background: '#111', color: '#00FF41', border: '1px solid #00FF41', padding: '12px 20px', borderRadius: 30, fontWeight: 'bold', cursor: 'pointer' }}
         >
-          {chatOpen ? 'Close Clan Chat' : 'Open Clan Chat'}
+          {chatOpen ? 'CLOSE CHAT' : 'CLAN CHAT'}
         </button>
       </div>
 
       {chatOpen && (
         <div style={{ 
-          position: 'absolute', top: 0, right: 0, bottom: 0, width: 300, 
-          background: 'rgba(0,0,0,0.85)', borderLeft: '1px solid #333',
+          position: 'absolute', top: 0, right: 0, bottom: 0, width: 320, 
+          background: 'rgba(5, 10, 5, 0.95)', borderLeft: '1px solid #00FF41',
           display: 'flex', flexDirection: 'column', zIndex: 90,
-          backdropFilter: 'blur(10px)',
-          paddingTop: 60, paddingBottom: 100
+          paddingTop: 80, paddingBottom: 100
         }}>
-          <div style={{ padding: 16, borderBottom: '1px solid #333', color: '#B85025', fontWeight: 'bold', fontSize: 18 }}>
+          <div style={{ padding: 16, borderBottom: '1px solid #333', color: '#00FF41', fontWeight: 'bold', fontSize: 18 }}>
             CLAN: TITANS
           </div>
           <div style={{ flex: 1, padding: 16, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
             {MOCK_CHAT.map(msg => (
-              <div key={msg.id} style={{ background: '#1A1A1A', padding: 12, borderRadius: 8, borderLeft: `3px solid ${msg.senderName === 'Commander' ? '#00FF41' : '#7A695B'}` }}>
+              <div key={msg.id} style={{ background: '#111', padding: 12, borderRadius: 8, borderLeft: `3px solid ${msg.senderName === 'Commander' ? '#00FF41' : '#B85025'}` }}>
                 <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>{msg.senderName}</div>
                 <div style={{ color: '#FFF', fontSize: 14 }}>{msg.text}</div>
-                {msg.isDonationRequest && (
-                  <button style={{ marginTop: 8, width: '100%', background: '#333', color: '#00FF41', border: '1px solid #00FF41', padding: 6, cursor: 'pointer' }}>
-                    Donate Troops
-                  </button>
-                )}
               </div>
             ))}
-          </div>
-          <div style={{ padding: 16, borderTop: '1px solid #333' }}>
-            <input 
-              type="text" 
-              placeholder="Message clan..." 
-              style={{ width: '100%', background: '#1A1A1A', border: '1px solid #333', color: '#FFF', padding: '10px 12px', boxSizing: 'border-box' }}
-            />
           </div>
         </div>
       )}
