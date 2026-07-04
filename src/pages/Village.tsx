@@ -27,6 +27,8 @@ const MOCK_CHAT = [
 export const Village = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [shopOpen, setShopOpen] = useState(false);
+  const [placementMode, setPlacementMode] = useState<{type: 'GoldMine'|'ElixirCollector'|'Wall', cost: number} | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
 
   // Panning State
@@ -55,6 +57,51 @@ export const Village = () => {
   };
 
   const handlePointerUp = () => setIsDragging(false);
+
+  const handleUpgrade = () => {
+    if (!gameState || !selectedBuilding) return;
+    const cost = selectedBuilding.level * 500; // Mock cost scaling
+    if (gameState.resources.gold >= cost) {
+      const newState = { ...gameState };
+      newState.resources.gold -= cost;
+      const b = newState.village.buildings.find(x => x.id === selectedBuilding.id);
+      if (b) {
+        b.level += 1;
+        // In a real app we'd set isUpgrading = true and set upgradeFinishTimestamp
+      }
+      setGameState(newState);
+      localStorage.setItem('siegecraft_state', JSON.stringify(newState));
+    } else {
+      alert("Not enough Gold!");
+    }
+  };
+
+  const handleGridClick = () => {
+    if (!placementMode || !gameState) return;
+    
+    // Quick hack to convert click to rough grid coords (ignoring pan for prototype simplicity, assuming center)
+    const newQ = Math.floor(Math.random() * 8); 
+    const newR = Math.floor(Math.random() * 8);
+
+    if (gameState.resources.gold >= placementMode.cost) {
+      const newState = { ...gameState };
+      newState.resources.gold -= placementMode.cost;
+      newState.village.buildings.push({
+        id: Math.random().toString(),
+        type: placementMode.type,
+        level: 1,
+        q: newQ,
+        r: newR,
+        isUpgrading: false
+      });
+      setGameState(newState);
+      localStorage.setItem('siegecraft_state', JSON.stringify(newState));
+      setPlacementMode(null);
+    } else {
+      alert("Not enough Gold!");
+      setPlacementMode(null);
+    }
+  };
 
   if (!gameState) return <div style={{ color: '#fff', padding: 20 }}>Loading Village...</div>;
 
@@ -94,30 +141,34 @@ export const Village = () => {
         transform: 'rotateX(60deg) rotateZ(-45deg)' 
       }}>
         {/* GRASS FLOOR */}
-        <div style={{
-          position: 'absolute',
-          width: TILE_WIDTH * 20,
-          height: TILE_WIDTH * 20,
-          left: -TILE_WIDTH * 10,
-          top: -TILE_WIDTH * 10,
-          backgroundImage: 'linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px)',
-          backgroundSize: `${TILE_WIDTH}px ${TILE_WIDTH}px`,
-          backgroundColor: '#0a1a0a',
-          border: '2px solid rgba(0, 255, 65, 0.3)',
-          boxShadow: '0 0 100px rgba(0,255,65,0.1)',
-          pointerEvents: 'none'
-        }} />
+        <div 
+          onClick={handleGridClick}
+          style={{
+            position: 'absolute',
+            width: TILE_WIDTH * 20,
+            height: TILE_WIDTH * 20,
+            left: -TILE_WIDTH * 10,
+            top: -TILE_WIDTH * 10,
+            backgroundImage: 'linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px)',
+            backgroundSize: `${TILE_WIDTH}px ${TILE_WIDTH}px`,
+            backgroundColor: '#0a1a0a',
+            border: '2px solid rgba(0, 255, 65, 0.3)',
+            boxShadow: '0 0 100px rgba(0,255,65,0.1)',
+            pointerEvents: placementMode ? 'auto' : 'none',
+            cursor: placementMode ? 'crosshair' : 'default'
+          }} 
+        />
 
         {/* BUILDINGS */}
         {gameState.village.buildings.map((b: Building) => {
           const x = (b.q - 5) * TILE_WIDTH;
           const y = (b.r - 5) * TILE_WIDTH; 
           
-          let color = '#FFF';
-          if (b.type === 'TownHall') color = '#B85025';
-          if (b.type === 'GoldMine') color = '#00FF41';
-          if (b.type === 'ElixirCollector') color = '#D100FF';
-          if (b.type === 'Wall') color = '#555';
+          let bgImage = 'none';
+          if (b.type === 'TownHall') bgImage = 'url(/assets/th.jpg)';
+          if (b.type === 'GoldMine') bgImage = 'url(/assets/gm.jpg)';
+          if (b.type === 'ElixirCollector') bgImage = 'url(/assets/ec.jpg)';
+          if (b.type === 'Wall') bgImage = 'linear-gradient(45deg, #444, #222)';
 
           const isSelected = selectedBuilding?.id === b.id;
 
@@ -131,19 +182,25 @@ export const Village = () => {
                 top: y,
                 width: TILE_WIDTH * 2, 
                 height: TILE_WIDTH * 2, 
-                backgroundColor: color,
-                border: isSelected ? '4px solid #FFF' : '2px solid #000',
+                backgroundImage: bgImage,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: bgImage === 'none' ? '#555' : 'transparent',
+                // This is the magic for AI-generated JPGs with black backgrounds!
+                mixBlendMode: b.type === 'Wall' ? 'normal' : 'screen',
+                border: isSelected ? '2px solid #FFF' : 'none',
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'flex-end',
                 justifyContent: 'center',
-                boxShadow: isSelected ? '0 0 20px #FFF' : 'inset 0 0 20px rgba(0,0,0,0.5)',
+                boxShadow: isSelected ? '0 0 20px #FFF' : 'none',
                 transform: 'translateZ(1px)', 
                 cursor: 'pointer',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                paddingBottom: 4
               }}
             >
-              <div style={{ transform: 'rotateZ(45deg) rotateX(-60deg)', color: '#000', fontWeight: 'bold', fontSize: 14 }}>
-                {b.type.substring(0,2).toUpperCase()}
+              <div style={{ transform: 'rotateZ(45deg) rotateX(-60deg)', color: '#00FF41', fontWeight: 'bold', fontSize: 12, background: 'rgba(0,0,0,0.8)', padding: '2px 4px' }}>
+                LVL {b.level}
               </div>
             </div>
           );
@@ -162,13 +219,46 @@ export const Village = () => {
             {selectedBuilding.type} <span style={{ color: '#FFF' }}>LVL {selectedBuilding.level}</span>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button style={{ flex: 1, background: '#B85025', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer' }}>
-              UPGRADE
+            <button onClick={handleUpgrade} style={{ flex: 1, background: '#B85025', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer' }}>
+              UPGRADE ({selectedBuilding.level * 500} G)
             </button>
             <button onClick={() => setSelectedBuilding(null)} style={{ background: '#333', color: '#FFF', border: 'none', padding: 10, cursor: 'pointer' }}>
               CLOSE
             </button>
           </div>
+        </div>
+      )}
+
+      {/* PLACEMENT MODE INDICATOR */}
+      {placementMode && (
+        <div style={{ position: 'absolute', top: 100, left: '50%', transform: 'translateX(-50%)', background: '#00FF41', color: '#000', padding: '10px 20px', fontWeight: 'bold', borderRadius: 20, zIndex: 100 }}>
+          TAP GRID TO PLACE {placementMode.type.toUpperCase()}
+        </div>
+      )}
+
+      {/* SHOP UI */}
+      <div style={{ position: 'absolute', bottom: 40, left: 20, zIndex: 100 }}>
+        <button 
+          onClick={() => setShopOpen(!shopOpen)}
+          style={{ background: '#111', color: '#FFF', border: '2px solid #FFF', padding: '12px 20px', borderRadius: 30, fontWeight: 'bold', cursor: 'pointer' }}
+        >
+          {shopOpen ? 'CLOSE SHOP' : 'BUILD MENU'}
+        </button>
+      </div>
+
+      {shopOpen && (
+        <div style={{ 
+          position: 'absolute', bottom: 100, left: 20, width: 250, 
+          background: 'rgba(5, 10, 5, 0.95)', border: '1px solid #FFF',
+          display: 'flex', flexDirection: 'column', zIndex: 90, padding: 16
+        }}>
+          <div style={{ color: '#FFF', fontWeight: 'bold', fontSize: 18, marginBottom: 12 }}>RESOURCES</div>
+          <button onClick={() => { setPlacementMode({type: 'GoldMine', cost: 1000}); setShopOpen(false); }} style={{ background: '#111', color: '#00FF41', border: '1px solid #00FF41', padding: 10, marginBottom: 8, cursor: 'pointer', textAlign: 'left' }}>
+            + GOLD MINE (1000 G)
+          </button>
+          <button onClick={() => { setPlacementMode({type: 'ElixirCollector', cost: 1000}); setShopOpen(false); }} style={{ background: '#111', color: '#D100FF', border: '1px solid #D100FF', padding: 10, cursor: 'pointer', textAlign: 'left' }}>
+            + ELIXIR COLLECTOR (1000 G)
+          </button>
         </div>
       )}
 
