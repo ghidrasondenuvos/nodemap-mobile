@@ -57,7 +57,6 @@ export const Editor: React.FC<EditorProps> = ({ isNew = false }) => {
     // Ensure filename ends with .md
     const filename = `${title.trim() || 'Untitled'}.md`;
     await saveNote(filename, markdown);
-    playSound('success');
   };
 
   const handleDelete = async () => {
@@ -89,11 +88,15 @@ export const Editor: React.FC<EditorProps> = ({ isNew = false }) => {
         </motion.button>
       </header>
 
-      <div className="editor-content">
+      <div 
+        className="editor-content" 
+        onClick={() => (editor?._tiptapEditor as any)?.commands?.focus('end')}
+        style={{ minHeight: '100%', cursor: 'text' }}
+      >
         {isLoaded && (
           <BlockNoteView 
             editor={editor} 
-            theme="light" // Ideally we customize this with CSS variables
+            theme="light" 
             onChange={handleSave}
           />
         )}
