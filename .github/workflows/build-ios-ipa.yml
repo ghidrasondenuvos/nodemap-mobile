@@ -1,0 +1,54 @@
+name: Build iOS IPA for SideStore
+
+on:
+  workflow_dispatch: # Allows you to trigger the build manually from GitHub Actions tab
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Web App
+        run: npm run build
+
+      - name: Sync Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Build iOS App (Unsigned for Sideloading)
+        run: |
+          cd ios/App
+          # Build the app without code signing (SideStore handles signing on-device)
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            clean build
+
+      - name: Package into IPA
+        run: |
+          # The built .app file is located deep in the DerivedData or build folder
+          # We need to find it, put it in a "Payload" folder, and zip it as an .ipa
+          mkdir -p Payload
+          # xcodebuild outputs to the build/Release-iphoneos folder relative to the ios/App directory
+          cp -r ios/App/build/Release-iphoneos/App.app Payload/
+          zip -r NodeMap.ipa Payload
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NodeMap-SideStore
+          path: NodeMap.ipa
+          retention-days: 7

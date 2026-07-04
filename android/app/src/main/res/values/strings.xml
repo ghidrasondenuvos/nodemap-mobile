@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NodeMap</string>
+    <string name="title_activity_main">NodeMap</string>
+    <string name="package_name">com.nodemap.app</string>
+    <string name="custom_url_scheme">com.nodemap.app</string>
+</resources>

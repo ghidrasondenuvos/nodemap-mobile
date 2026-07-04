@@ -1,0 +1,94 @@
+.gallery-page {
+  padding: 24px;
+}
+
+.gallery-header {
+  margin-bottom: 32px;
+  padding-top: 20px;
+}
+
+.gallery-header h1 {
+  font-size: 2.5rem;
+  letter-spacing: -1px;
+}
+
+.gallery-header p {
+  color: var(--color-ink-light);
+  font-size: 1.1rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 40vh;
+  text-align: center;
+  color: var(--color-ink-light);
+}
+
+.create-btn {
+  margin-top: 20px;
+  padding: 12px 24px;
+  border-radius: 20px;
+  color: var(--color-ink);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  padding-bottom: 20px;
+}
+
+.note-card {
+  background-color: var(--color-card);
+  border-radius: 12px;
+  padding: 16px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  
+  /* Slight sepia texture for the card itself */
+  background-image: linear-gradient(to bottom right, rgba(255,255,255,0.9), rgba(247,245,240,1));
+}
+
+.note-card:active {
+  transform: scale(0.97);
+  box-shadow: var(--shadow-md);
+}
+
+.note-card h3 {
+  font-size: 1.2rem;
+  line-height: 1.3;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.note-card .preview {
+  font-size: 0.9rem;
+  color: var(--color-ink-light);
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.note-card .date {
+  font-size: 0.75rem;
+  color: var(--color-ink-light);
+  opacity: 0.7;
+  margin-top: 8px;
+  align-self: flex-start;
+}

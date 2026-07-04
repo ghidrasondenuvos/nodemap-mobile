@@ -1,0 +1,73 @@
+.editor-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  padding: env(safe-area-inset-top) 16px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  /* Overwrite glass to match background slightly better */
+  background: rgba(247, 245, 240, 0.85);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.icon-btn {
+  padding: 8px;
+  border-radius: 50%;
+  color: var(--color-ink-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background-color: rgba(0,0,0,0.05);
+  color: var(--color-ink);
+}
+
+.delete-btn {
+  color: #dc3545;
+}
+
+.title-input {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  text-align: center;
+  margin: 0 16px;
+  outline: none;
+}
+
+.title-input::placeholder {
+  color: rgba(45, 43, 42, 0.3);
+}
+
+.editor-content {
+  flex-grow: 1;
+  padding: 16px;
+  /* Crucial: allow native scrolling but prevent body bounce */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Customizing BlockNote internals to match analog aesthetic */
+.bn-container {
+  font-family: var(--font-sans) !important;
+  color: var(--color-ink) !important;
+}
+
+.bn-editor {
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+
+/* The keyboard resizing is naturally handled by the browser if viewport meta tag is set correctly */
