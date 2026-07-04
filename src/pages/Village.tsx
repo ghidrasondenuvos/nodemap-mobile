@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { GameState, Building } from '../game/schema';
 import { calculateOfflineDelta } from '../game/engine';
 import { TILE_WIDTH } from '../game/grid';
@@ -35,10 +35,14 @@ export const Village = () => {
   const [placementMode, setPlacementMode] = useState<{type: 'GoldMine'|'ElixirCollector'|'Barracks'|'Wall'|'Cannon', cost: number} | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
 
-  // Panning State
+  // Panning & Zooming State
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
+  
+  const activePointers = useRef<Map<number, {x: number, y: number}>>(new Map());
+  const touchDist = useRef<number | null>(null);
 
   useEffect(() => {
     // Basic LocalStorage persistence for Web
@@ -72,17 +76,49 @@ export const Village = () => {
   }, []);
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    setIsDragging(true);
-    setStartPan({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (isDragging) {
-      setPan({ x: e.clientX - startPan.x, y: e.clientY - startPan.y });
+    activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (activePointers.current.size === 1) {
+      setIsDragging(true);
+      setStartPan({ x: e.clientX - pan.x, y: e.clientY - pan.y });
     }
   };
 
-  const handlePointerUp = () => setIsDragging(false);
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (activePointers.current.has(e.pointerId)) {
+      activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+
+    if (activePointers.current.size === 2) {
+      const pts = Array.from(activePointers.current.values());
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      if (touchDist.current !== null) {
+        const delta = dist - touchDist.current;
+        setZoom(z => Math.min(Math.max(0.3, z + delta * 0.01), 3));
+      }
+      touchDist.current = dist;
+      setIsDragging(false);
+    } else if (activePointers.current.size === 1 && isDragging) {
+      setPan({ x: e.clientX - startPan.x, y: e.clientY - startPan.y });
+      touchDist.current = null;
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    activePointers.current.delete(e.pointerId);
+    if (activePointers.current.size === 0) {
+      setIsDragging(false);
+      touchDist.current = null;
+    } else if (activePointers.current.size === 1) {
+      const pts = Array.from(activePointers.current.values());
+      setStartPan({ x: pts[0].x - pan.x, y: pts[0].y - pan.y });
+      setIsDragging(true);
+      touchDist.current = null;
+    }
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    setZoom(z => Math.min(Math.max(0.3, z - e.deltaY * 0.002), 3));
+  };
 
   const handleUpgrade = () => {
     if (!gameState || !selectedBuilding || selectedBuilding.isUpgrading) return;
@@ -168,7 +204,9 @@ export const Village = () => {
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
       onPointerLeave={handlePointerUp}
+      onWheel={handleWheel}
     >
       {/* HUD */}
       <div style={{ position: 'absolute', top: 20, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', zIndex: 100, pointerEvents: 'none' }}>
@@ -203,14 +241,11 @@ export const Village = () => {
         </div>
       </div>
 
-      {/* ISOMETRIC GRID RENDERING WITH PANNING */}
+      {/* ISOMETRIC WORLD */}
       <div style={{ 
-        position: 'absolute', 
-        top: `calc(50% + ${pan.y}px)`, 
-        left: `calc(50% + ${pan.x}px)`, 
-        width: 0, height: 0,
-        transformStyle: 'preserve-3d',
-        transform: 'rotateX(60deg) rotateZ(-45deg)' 
+        position: 'absolute', top: '50%', left: '50%', 
+        transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotateX(60deg) rotateZ(-45deg)`, 
+        transformStyle: 'preserve-3d', transition: isDragging ? 'none' : 'transform 0.1s ease-out'
       }}>
         {/* GRASS FLOOR */}
         <div 
