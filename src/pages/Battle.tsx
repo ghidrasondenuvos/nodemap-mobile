@@ -23,7 +23,8 @@ interface Troop {
 
 export const Battle = () => {
   const navigate = useNavigate();
-  const [playerTroops, setPlayerTroops] = useState(0);
+  const [playerBarbs, setPlayerBarbs] = useState(0);
+  const [playerArchers, setPlayerArchers] = useState(0);
   const [enemyBuildings, setEnemyBuildings] = useState<Building[]>(ENEMY_BASE);
   const [activeTroops, setActiveTroops] = useState<Troop[]>([]);
   const [lootedGold, setLootedGold] = useState(0);
@@ -37,7 +38,8 @@ export const Battle = () => {
     const saved = localStorage.getItem('siegecraft_state');
     if (saved) {
       const state: GameState = JSON.parse(saved);
-      setPlayerTroops(state.troops.barbarians);
+      setPlayerBarbs(state.troops.barbarians);
+      setPlayerArchers(state.troops.archers);
     }
   }, []);
 
@@ -81,12 +83,14 @@ export const Battle = () => {
 
           if (target) {
             const dist = Math.abs(target.q - troop.q) + Math.abs(target.r - troop.r);
-            if (dist > 1.5) { // Needs to be adjacent
+            const range = troop.type === 'Archer' ? 3.5 : 1.5;
+            
+            if (dist > range) {
               const dq = target.q > troop.q ? 0.2 : target.q < troop.q ? -0.2 : 0;
               const dr = target.r > troop.r ? 0.2 : target.r < troop.r ? -0.2 : 0;
               return { ...troop, q: troop.q + dq, r: troop.r + dr, targetId: target.id };
             } else {
-              target.level -= 0.1; // Using level as health hack for prototype
+              target.level -= troop.type === 'Archer' ? 0.05 : 0.1; // Using level as health hack for prototype
               if (target.level <= 0) {
                 updatedBuildings = updatedBuildings.filter(b => b.id !== target!.id);
                 // LOOT!
@@ -121,25 +125,26 @@ export const Battle = () => {
   };
   const handlePointerUp = () => setIsDragging(false);
 
-  const handleDeploy = () => {
-    if (playerTroops <= 0) return;
-    setPlayerTroops(prev => prev - 1);
+  const handleDeploy = (type: 'barbarians' | 'archers') => {
+    if (type === 'barbarians' && playerBarbs <= 0) return;
+    if (type === 'archers' && playerArchers <= 0) return;
     
-    // Deploy roughly at edges (q: 0-9, r: 9)
+    if (type === 'barbarians') setPlayerBarbs(prev => prev - 1);
+    if (type === 'archers') setPlayerArchers(prev => prev - 1);
+    
     const deployQ = Math.floor(Math.random() * 10);
     setActiveTroops(prev => [...prev, {
       id: Math.random().toString(),
-      type: 'Barbarian',
+      type: type === 'barbarians' ? 'Barbarian' : 'Archer',
       q: deployQ,
       r: 9,
-      hp: 100
+      hp: type === 'barbarians' ? 100 : 50
     }]);
 
-    // Save deducted troop
     const saved = localStorage.getItem('siegecraft_state');
     if (saved) {
       const state: GameState = JSON.parse(saved);
-      state.troops.barbarians -= 1;
+      state.troops[type] -= 1;
       localStorage.setItem('siegecraft_state', JSON.stringify(state));
     }
   };
@@ -216,11 +221,12 @@ export const Battle = () => {
         {activeTroops.map(t => {
           const x = (t.q - 5) * TILE_WIDTH;
           const y = (t.r - 5) * TILE_WIDTH; 
+          const sprite = t.type === 'Barbarian' ? 'url(/assets/barb.jpg)' : 'url(/assets/arch.jpg)';
           return (
             <div key={t.id} style={{
-              position: 'absolute', left: x + (TILE_WIDTH/2), top: y + (TILE_WIDTH/2), width: 16, height: 16,
-              background: '#FF4100', borderRadius: '50%', boxShadow: '0 0 10px #FF4100',
-              transform: 'translateZ(5px)', transition: 'left 0.1s linear, top 0.1s linear'
+              position: 'absolute', left: x + (TILE_WIDTH/2) - 16, top: y + (TILE_WIDTH/2) - 16, width: 32, height: 32,
+              backgroundImage: sprite, backgroundSize: 'cover', backgroundPosition: 'center',
+              mixBlendMode: 'screen', transform: 'translateZ(5px)', transition: 'left 0.1s linear, top 0.1s linear'
             }} />
           )
         })}
@@ -228,8 +234,11 @@ export const Battle = () => {
 
       {/* DEPLOYMENT BAR */}
       <div style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 20, zIndex: 100 }}>
-        <button onClick={handleDeploy} style={{ background: '#111', color: '#FF4100', border: '2px solid #FF4100', padding: '16px 32px', borderRadius: 8, fontWeight: 'bold', fontSize: 18, cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.8)' }}>
-          DEPLOY BARBARIAN ({playerTroops} LEFT)
+        <button onClick={() => handleDeploy('barbarians')} style={{ background: '#111', color: '#FF4100', border: '2px solid #FF4100', padding: '16px 32px', borderRadius: 8, fontWeight: 'bold', fontSize: 18, cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.8)' }}>
+          DEPLOY BARBARIAN ({playerBarbs})
+        </button>
+        <button onClick={() => handleDeploy('archers')} style={{ background: '#111', color: '#D100FF', border: '2px solid #D100FF', padding: '16px 32px', borderRadius: 8, fontWeight: 'bold', fontSize: 18, cursor: 'pointer', boxShadow: '0 10px 30px rgba(0,0,0,0.8)' }}>
+          DEPLOY ARCHER ({playerArchers})
         </button>
       </div>
     </div>

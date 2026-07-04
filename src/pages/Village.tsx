@@ -47,6 +47,28 @@ export const Village = () => {
     state = calculateOfflineDelta(state, Date.now());
     setGameState(state);
     localStorage.setItem('siegecraft_state', JSON.stringify(state));
+
+    // Fast Upgrade Tick Loop
+    const interval = setInterval(() => {
+      setGameState(curr => {
+        if (!curr) return curr;
+        let changed = false;
+        const newBuildings = curr.village.buildings.map(b => {
+          if (b.isUpgrading && b.upgradeFinishTimestamp && Date.now() >= b.upgradeFinishTimestamp) {
+            changed = true;
+            return { ...b, level: b.level + 1, isUpgrading: false, upgradeFinishTimestamp: undefined };
+          }
+          return b;
+        });
+        if (changed) {
+          const newState = { ...curr, village: { ...curr.village, buildings: newBuildings } };
+          localStorage.setItem('siegecraft_state', JSON.stringify(newState));
+          return newState;
+        }
+        return curr;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -63,15 +85,15 @@ export const Village = () => {
   const handlePointerUp = () => setIsDragging(false);
 
   const handleUpgrade = () => {
-    if (!gameState || !selectedBuilding) return;
+    if (!gameState || !selectedBuilding || selectedBuilding.isUpgrading) return;
     const cost = selectedBuilding.level * 500; // Mock cost scaling
     if (gameState.resources.gold >= cost) {
       const newState = { ...gameState };
       newState.resources.gold -= cost;
       const b = newState.village.buildings.find(x => x.id === selectedBuilding.id);
       if (b) {
-        b.level += 1;
-        // In a real app we'd set isUpgrading = true and set upgradeFinishTimestamp
+        b.isUpgrading = true;
+        b.upgradeFinishTimestamp = Date.now() + 15000; // 15 seconds for prototype
       }
       setGameState(newState);
       localStorage.setItem('siegecraft_state', JSON.stringify(newState));
@@ -80,12 +102,30 @@ export const Village = () => {
     }
   };
 
-  const handleTrain = () => {
+  const handleSpeedUp = () => {
+    if (!gameState || !selectedBuilding || !selectedBuilding.isUpgrading) return;
+    if (gameState.resources.gems >= 10) {
+      const newState = { ...gameState };
+      newState.resources.gems -= 10;
+      const b = newState.village.buildings.find(x => x.id === selectedBuilding.id);
+      if (b) {
+        b.level += 1;
+        b.isUpgrading = false;
+        b.upgradeFinishTimestamp = undefined;
+      }
+      setGameState(newState);
+      localStorage.setItem('siegecraft_state', JSON.stringify(newState));
+    } else {
+      alert("Not enough Gems!");
+    }
+  };
+
+  const handleTrain = (type: 'barbarians' | 'archers') => {
     if (!gameState || selectedBuilding?.type !== 'Barracks') return;
     if (gameState.resources.elixir >= 100) {
       const newState = { ...gameState };
       newState.resources.elixir -= 100;
-      newState.troops.barbarians += 1;
+      newState.troops[type] += 1;
       setGameState(newState);
       localStorage.setItem('siegecraft_state', JSON.stringify(newState));
     } else {
@@ -149,6 +189,10 @@ export const Village = () => {
           <div style={{ background: '#111', padding: '6px 16px', border: '1px solid #D100FF', borderRadius: 4 }}>
             <span style={{ color: '#D100FF', marginRight: 8, fontWeight: 'bold' }}>ELIXIR</span>
             <span style={{ color: '#FFF', fontFamily: 'monospace', fontSize: 16 }}>{Math.floor(gameState.resources.elixir)}</span>
+          </div>
+          <div style={{ background: '#111', padding: '6px 16px', border: '1px solid #00FFFF', borderRadius: 4 }}>
+            <span style={{ color: '#00FFFF', marginRight: 8, fontWeight: 'bold' }}>GEMS</span>
+            <span style={{ color: '#FFF', fontFamily: 'monospace', fontSize: 16 }}>{Math.floor(gameState.resources.gems)}</span>
           </div>
         </div>
       </div>
@@ -225,6 +269,11 @@ export const Village = () => {
               <div style={{ transform: 'rotateZ(45deg) rotateX(-60deg)', color: '#00FF41', fontWeight: 'bold', fontSize: 12, background: 'rgba(0,0,0,0.8)', padding: '2px 4px' }}>
                 LVL {b.level}
               </div>
+              {b.isUpgrading && (
+                <div style={{ position: 'absolute', top: -20, left: '50%', transform: 'translateX(-50%) rotateZ(45deg) rotateX(-60deg)', color: '#00FFFF', fontWeight: 'bold', fontSize: 10, background: 'rgba(0,0,0,0.8)', padding: '2px 4px', whiteSpace: 'nowrap' }}>
+                  UPGRADING
+                </div>
+              )}
             </div>
           );
         })}
@@ -241,19 +290,30 @@ export const Village = () => {
           <div style={{ color: '#00FF41', fontWeight: 'bold', fontSize: 18, textTransform: 'uppercase' }}>
             {selectedBuilding.type} <span style={{ color: '#FFF' }}>LVL {selectedBuilding.level}</span>
           </div>
-          {selectedBuilding.type === 'Barracks' && (
+          {selectedBuilding.type === 'Barracks' && !selectedBuilding.isUpgrading && (
             <div style={{ color: '#FFF', fontSize: 14 }}>
-              Barbarians Available: <span style={{ color: '#D100FF', fontWeight: 'bold' }}>{gameState.troops.barbarians}</span>
+              Troops: <span style={{ color: '#D100FF', fontWeight: 'bold' }}>{gameState.troops.barbarians} Barbarians</span> | <span style={{ color: '#D100FF', fontWeight: 'bold' }}>{gameState.troops.archers} Archers</span>
             </div>
           )}
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={handleUpgrade} style={{ flex: 1, background: '#B85025', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer' }}>
-              UPGRADE ({selectedBuilding.level * 500} G)
-            </button>
-            {selectedBuilding.type === 'Barracks' && (
-              <button onClick={handleTrain} style={{ flex: 1, background: '#D100FF', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer' }}>
-                TRAIN (100 E)
+            {!selectedBuilding.isUpgrading ? (
+              <button onClick={handleUpgrade} style={{ flex: 1, background: '#B85025', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer' }}>
+                UPGRADE ({selectedBuilding.level * 500} G)
               </button>
+            ) : (
+              <button onClick={handleSpeedUp} style={{ flex: 1, background: '#00FFFF', color: '#000', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer' }}>
+                FINISH NOW (10 GEMS)
+              </button>
+            )}
+            {selectedBuilding.type === 'Barracks' && !selectedBuilding.isUpgrading && (
+              <>
+                <button onClick={() => handleTrain('barbarians')} style={{ flex: 1, background: '#D100FF', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer', fontSize: 12 }}>
+                  TRAIN BARB (100 E)
+                </button>
+                <button onClick={() => handleTrain('archers')} style={{ flex: 1, background: '#D100FF', color: '#FFF', border: 'none', padding: 10, fontWeight: 'bold', cursor: 'pointer', fontSize: 12 }}>
+                  TRAIN ARCH (150 E)
+                </button>
+              </>
             )}
             <button onClick={() => setSelectedBuilding(null)} style={{ background: '#333', color: '#FFF', border: 'none', padding: 10, cursor: 'pointer' }}>
               CLOSE
