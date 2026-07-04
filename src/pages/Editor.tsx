@@ -5,6 +5,7 @@ import { CaretLeft, Trash } from '@phosphor-icons/react';
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import { triggerHaptic } from '../utils/haptics';
+import { playSound } from '../utils/sounds';
 import { ImpactStyle } from '@capacitor/haptics';
 import { motion } from 'framer-motion';
 import "@blocknote/core/fonts/inter.css";
@@ -56,8 +57,7 @@ export const Editor: React.FC<EditorProps> = ({ isNew = false }) => {
     // Ensure filename ends with .md
     const filename = `${title.trim() || 'Untitled'}.md`;
     await saveNote(filename, markdown);
-    
-    // If it was a new note, we might want to clean up if the title changed, but keeping it simple for now
+    playSound('success');
   };
 
   const handleDelete = async () => {
@@ -66,6 +66,7 @@ export const Editor: React.FC<EditorProps> = ({ isNew = false }) => {
       if (!isNew && id) {
         await deleteNote(decodeURIComponent(id));
       }
+      playSound('swoosh');
       navigate('/');
     }
   };
@@ -73,7 +74,7 @@ export const Editor: React.FC<EditorProps> = ({ isNew = false }) => {
   return (
     <div className="editor-page">
       <header className="editor-header glass">
-        <motion.button whileTap={{ scale: 0.85 }} className="icon-btn" onClick={() => { triggerHaptic(ImpactStyle.Light); handleSave(); navigate('/'); }}>
+        <motion.button whileTap={{ scale: 0.85 }} className="icon-btn" onClick={() => { triggerHaptic(ImpactStyle.Light); playSound('click'); handleSave(); navigate('/'); }}>
           <CaretLeft size={28} />
         </motion.button>
         <input 

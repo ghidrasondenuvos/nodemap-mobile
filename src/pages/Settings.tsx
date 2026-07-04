@@ -1,6 +1,7 @@
 import React from 'react';
 import { exportVault, getNotes, deleteNote } from '../services/filesystem';
 import { triggerHaptic } from '../utils/haptics';
+import { playSound } from '../utils/sounds';
 import { ImpactStyle } from '@capacitor/haptics';
 import { motion } from 'framer-motion';
 import './Settings.css';
@@ -11,6 +12,7 @@ export const Settings: React.FC = () => {
     try {
       await exportVault();
       triggerHaptic(ImpactStyle.Heavy);
+      playSound('success');
     } catch (e) {
       alert('Error exporting vault.');
     }
@@ -24,6 +26,7 @@ export const Settings: React.FC = () => {
         await deleteNote(note.id);
       }
       triggerHaptic(ImpactStyle.Heavy);
+      playSound('swoosh');
       alert("Vault cleared.");
     }
   };

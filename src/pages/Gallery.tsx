@@ -5,6 +5,7 @@ import type { Note } from '../services/filesystem';
 import { motion } from 'framer-motion';
 import { MagnifyingGlass } from '@phosphor-icons/react';
 import { triggerHaptic } from '../utils/haptics';
+import { playSound } from '../utils/sounds';
 import { ImpactStyle } from '@capacitor/haptics';
 import { formatDistanceToNow } from 'date-fns';
 import './Gallery.css';
@@ -29,6 +30,7 @@ export const Gallery: React.FC = () => {
 
   const handleNoteClick = (id: string) => {
     triggerHaptic(ImpactStyle.Light);
+    playSound('click');
     navigate(`/note/${encodeURIComponent(id)}`);
   };
 
@@ -62,7 +64,7 @@ export const Gallery: React.FC = () => {
           <p style={{ color: 'var(--color-ink-light)' }}>Your vault is beautifully empty.</p>
           <motion.button 
             whileTap={{ scale: 0.95 }}
-            onClick={() => { triggerHaptic(ImpactStyle.Medium); navigate('/new'); }}
+            onClick={() => { triggerHaptic(ImpactStyle.Medium); playSound('swoosh'); navigate('/new'); }}
             style={{ marginTop: '20px', padding: '12px 24px', borderRadius: '20px', background: 'var(--color-accent)', color: 'white', fontWeight: 600, border: 'none' }}
           >
             Create Note

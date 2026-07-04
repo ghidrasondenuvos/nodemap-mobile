@@ -29,6 +29,18 @@ export async function initVault() {
   } catch (e) {
     // Folder likely already exists
   }
+  
+  // Initialize starter notes if first time
+  const initialized = localStorage.getItem('nodemap_initialized');
+  if (!initialized) {
+    const welcomeNote = `# Welcome to NodeMap\n\nA tactile, beautifully designed, local-first knowledge vault.\n\n## Features\n- **Analog Aesthetic**: Warm sepia tones and film grain.\n- **Graph View**: Connect your thoughts with [[Links]].\n- **Privacy**: Everything is stored locally on your device.\n\nEnjoy writing!`;
+    const howToNote = `# How to Use\n\n1. Tap the pencil icon to create a note.\n2. Link notes by typing \`[[Note Title]]\`.\n3. Check the graph view to see connections.\n4. Export everything as a .zip in Settings.`;
+    
+    await saveNote('Welcome to NodeMap.md', welcomeNote);
+    await saveNote('How to Use NodeMap.md', howToNote);
+    
+    localStorage.setItem('nodemap_initialized', 'true');
+  }
 }
 
 // List all notes

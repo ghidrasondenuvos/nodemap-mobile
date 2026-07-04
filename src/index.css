@@ -1,21 +1,22 @@
 :root {
-  /* Premium Analog Palette */
-  --color-paper: #F2EFE9;
-  --color-paper-dark: #E3DFD5;
-  --color-ink: #1C1A19;
-  --color-ink-light: #6E6862;
-  --color-accent: #D45B31; /* Vibrant Burned Orange */
-  --color-accent-hover: #B84A25;
-  --color-glass: rgba(242, 239, 233, 0.75);
-  --color-glass-border: rgba(255, 255, 255, 0.4);
-  --color-card: #FAF9F6;
+  /* Rich Sepia Paper Palette */
+  --color-paper: #EFE8D8;       /* Deep warm beige/sepia */
+  --color-paper-dark: #DECDB3;  /* Darker sepia for shadows */
+  --color-ink: #332A24;         /* Very dark brown/charcoal */
+  --color-ink-light: #7A695B;
+  --color-accent: #B85025;      /* Deep vintage burned orange */
+  --color-accent-hover: #8C3A19;
   
-  --shadow-sm: 0 2px 8px rgba(28, 26, 25, 0.04);
-  --shadow-md: 0 8px 24px rgba(28, 26, 25, 0.06);
-  --shadow-glass: 0 12px 32px rgba(28, 26, 25, 0.08);
+  --color-glass: rgba(239, 232, 216, 0.85); /* Frosty sepia glass */
+  --color-glass-border: rgba(255, 255, 255, 0.3);
+  --color-card: #F7F3EB;        /* Slightly lighter than paper for contrast */
   
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-serif: 'Playfair Display', 'Georgia', serif;
+  --shadow-sm: 0 4px 12px rgba(51, 42, 36, 0.05);
+  --shadow-md: 0 12px 32px rgba(51, 42, 36, 0.08);
+  --shadow-glass: 0 16px 40px rgba(51, 42, 36, 0.12);
+  
+  --font-sans: 'Outfit', 'Inter', -apple-system, sans-serif;
+  --font-serif: 'Lora', 'Playfair Display', Georgia, serif;
 }
 
 * {
@@ -32,8 +33,8 @@ body {
   line-height: 1.6;
   overscroll-behavior-y: none;
   
-  /* Extremely subtle fine grain paper texture */
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+  /* Intense, beautiful sepia grain texture */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 500 500' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CcolorMatrix type='matrix' values='1 0 0 0 0, 0 0.9 0 0 0, 0 0.7 0 0 0, 0 0 0 0.08 0' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   -webkit-overflow-scrolling: touch;
 }
 
@@ -56,18 +57,22 @@ button {
   outline: none;
 }
 
-/* Premium Glassmorphism */
 .glass {
   background: var(--color-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--color-glass-border);
   box-shadow: var(--shadow-glass);
 }
 
 .app-container {
   min-height: 100vh;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: calc(env(safe-area-inset-bottom) + 90px); /* Taller for the premium dock */
+  /* Correct paddings for iOS safe areas */
+  padding-top: calc(env(safe-area-inset-top) + 20px);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 110px); 
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
   position: relative;
+  max-width: 800px;
+  margin: 0 auto;
 }
