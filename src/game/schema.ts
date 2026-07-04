@@ -30,9 +30,25 @@ export interface TroopInventory {
   goblins: number;
 }
 
+export interface ChatMessage {
+  id: string;
+  senderName: string;
+  text: string;
+  timestamp: number;
+  isDonationRequest?: boolean;
+}
+
+export interface Clan {
+  id: string;
+  name: string;
+  members: string[]; // Player IDs
+  chatHistory: ChatMessage[];
+}
+
 export interface GameState {
   player: Player;
   resources: Resources;
   village: VillageState;
   troops: TroopInventory;
+  clanId?: string;
 }
