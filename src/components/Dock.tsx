@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { House, PencilSimple, Gear, ShareNetwork } from '@phosphor-icons/react';
+import { House, PencilSimple, Gear, ShareNetwork, ShieldStar } from '@phosphor-icons/react';
 import { motion } from 'framer-motion';
 import { triggerHaptic } from '../utils/haptics';
 import { playSound } from '../utils/sounds';
@@ -36,6 +36,13 @@ export const Dock: React.FC = () => {
           <ShareNetwork size={30} weight={location.pathname === '/graph' ? "fill" : "regular"} />
           {location.pathname === '/graph' && (
             <motion.div layoutId="dock-pill" className="active-pill" transition={{ type: "spring", stiffness: 350, damping: 25 }} />
+          )}
+        </NavLink>
+
+        <NavLink to="/village" onClick={handleTap} className={({ isActive }) => isActive ? "dock-item active" : "dock-item"}>
+          <ShieldStar size={30} weight={location.pathname === '/village' ? "fill" : "regular"} />
+          {location.pathname === '/village' && (
+            <motion.div layoutId="dock-pill" className="active-pill" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
           )}
         </NavLink>
         

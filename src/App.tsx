@@ -5,6 +5,7 @@ import { Gallery } from './pages/Gallery';
 import { Editor } from './pages/Editor';
 import { Settings } from './pages/Settings';
 import { Graph } from './pages/Graph';
+import { Village } from './pages/Village';
 import { Dock } from './components/Dock';
 import { initVault } from './services/filesystem';
 
@@ -38,6 +39,11 @@ const AnimatedRoutes = () => {
         <Route path="/settings" element={
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }}>
             <Settings />
+          </motion.div>
+        } />
+        <Route path="/village" element={
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }}>
+            <Village />
           </motion.div>
         } />
       </Routes>
